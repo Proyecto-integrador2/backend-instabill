@@ -1,0 +1,45 @@
+# Archivos de Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.env
+
+# Archivos de bases de datos
+*.sqlite3
+
+# Archivos de configuración
+*.log
+*.pot
+*.pyc
+*.mo
+*.coverage
+
+# Archivos de caché
+*.db
+*.sqlite3-journal
+
+# Archivos de pruebas
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Archivos de IDE
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Archivos de compilación
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+*.whl
