@@ -45,4 +45,4 @@ dist/
 *.whl
 
 client_secret.json
-dotte_banner.json
+dotted_banner.json
