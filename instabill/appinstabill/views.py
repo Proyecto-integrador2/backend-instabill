@@ -1,28 +1,25 @@
-from django.shortcuts import render
-
-# Create your views here.
-import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-import base64
-from decouple import config
 import os
-from google.cloud import speech
+from .models import Bill
+from .serializers import BillSerializer
+from django.shortcuts import render
+from django.core.files.storage import default_storage
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.core.files.storage import default_storage
+from rest_framework import status, viewsets
+from decouple import config
+from google.cloud import speech
+
 
 # clave de API de Google Cloud
-API_KEY = config('API_KEY')
+API_KEY = config("API_KEY")
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config("GOOGLE_APPLICATION_CREDENTIALS")
+
 
 class SpeechToTextAPIView(APIView):
     def post(self, request, *args, **kwargs):
         # Obtén el archivo de audio desde la petición
-        audio_file = request.FILES.get('audio')
+        audio_file = request.FILES.get("audio")
 
         if not audio_file:
             return Response({"error": "No audio file provided"}, status=400)
@@ -51,3 +48,8 @@ class SpeechToTextAPIView(APIView):
 
         # Devuelve la transcripción en la respuesta
         return Response({"transcription": transcription})
+
+
+class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
+    serializer_class = BillSerializer
