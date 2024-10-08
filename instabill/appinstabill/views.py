@@ -7,58 +7,47 @@ from rest_framework.response import Response
 from rest_framework import status
 import base64
 from decouple import config
+import os
+from google.cloud import speech
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.files.storage import default_storage
 
 # clave de API de Google Cloud
 API_KEY = config('API_KEY')
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config("GOOGLE_APPLICATION_CREDENTIALS")
+
 class SpeechToTextAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        try:
-            # Verificar que se haya enviado un archivo de audio
-            if 'audio' not in request.FILES:
-                return Response({"error": "No se proporcionó un archivo de audio."}, status=status.HTTP_400_BAD_REQUEST)
+        # Obtén el archivo de audio desde la petición
+        audio_file = request.FILES.get('audio')
 
-            # Obtener el archivo de audio
-            audio_file = request.FILES['audio']
-            audio_content = audio_file.read()
+        if not audio_file:
+            return Response({"error": "No audio file provided"}, status=400)
 
-            # Codificar el audio en base64
-            audio_base64 = base64.b64encode(audio_content).decode('utf-8')
+        # Inicializa el cliente de Google Cloud Speech-to-Text
+        client = speech.SpeechClient()
 
-            # Definir la URL de la API de Google Cloud Speech-to-Text
-            url = f"https://speech.googleapis.com/v1/speech:recognize?key={API_KEY}"
+        # Lee el archivo de audio
+        audio_content = audio_file.read()
 
-            # Configuración para la solicitud a Google Cloud
-            headers = {
-                "Content-Type": "application/json"
-            }
+        # Configura la solicitud
+        audio = speech.RecognitionAudio(content=audio_content)
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,  # Cambiar según el formato del archivo
+            sample_rate_hertz=48000,  # Ajusta según el archivo
+            language_code="es-ES",  # Idioma de transcripción (español)
+        )
 
-            # Configuración de la solicitud de transcripción
-            data = {
-                "config": {
-                    "encoding": "WAV",  # Formato
-                    "sampleRateHertz": 16000,  # Tasa de muestreo de archivo de audio
-                    "languageCode": "es-ES"  # Idioma 
-                },
-                "audio": {
-                    "content": audio_base64
-                }
-            }
+        # Envía la solicitud a la API de Google
+        response = client.recognize(config=config, audio=audio)
 
-            # Hacer la solicitud a la API de Google
-            response = requests.post(url, headers=headers, json=data)
+        # Procesa la respuesta
+        transcription = ""
+        for result in response.results:
+            transcription += result.alternatives[0].transcript
 
-            # Verificar si la solicitud fue exitosa
-            if response.status_code != 200:
-                return Response({"error": "Error en la solicitud a Google Cloud Speech-to-Text."}, status=response.status_code)
-
-            # Extraer la transcripción del JSON de respuesta
-            transcription_data = response.json()
-            transcription = ""
-            for result in transcription_data.get("results", []):
-                transcription += result["alternatives"][0]["transcript"]
-
-            return Response({"transcription": transcription}, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Devuelve la transcripción en la respuesta
+        return Response({"transcription": transcription})

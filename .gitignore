@@ -43,3 +43,6 @@ dist/
 .eggs/
 *.egg
 *.whl
+
+client_secret.json
+dotte_banner.json
