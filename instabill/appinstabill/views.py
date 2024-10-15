@@ -17,6 +17,37 @@ API_KEY = config("API_KEY")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config("GOOGLE_APPLICATION_CREDENTIALS")
 
 class SpeechToTextAPIView(APIView):
+    """
+    API View que permite la transcripción de archivos de audio a texto utilizando Google Cloud Speech-to-Text.
+
+    Esta vista acepta una solicitud HTTP POST que contiene un archivo de audio y procesa dicho archivo para convertirlo en texto.
+    El archivo de audio se valida y se convierte a un formato compatible antes de ser enviado al servicio de Google Cloud para
+    su transcripción.
+
+    Methods:
+        post(request, *args, **kwargs):
+            Procesa el archivo de audio enviado en la solicitud POST, lo convierte a un formato compatible y utiliza Google Cloud 
+            Speech-to-Text para transcribir el audio a texto.
+
+    Requisitos:
+        - Google Cloud Speech-to-Text configurado en el entorno (autenticación mediante las credenciales del servicio).
+        - La librería `pydub` para el procesamiento de audio.
+        - ffmpeg o avconv instalado en el servidor para la manipulación de archivos de audio.
+
+    Endpoint:
+        POST /speech-to-text/
+        
+    Request:
+        - Formato: multipart/form-data
+        - Parámetro obligatorio: `audio` (archivo de audio en formato .wav, .mp3, .ogg, etc.)
+
+    Ejemplo de uso:
+        Enviar una solicitud POST con un archivo de audio:
+        ```
+        curl -X POST http://127.0.0.1:8000/speech-to-text/ \
+        -F "audio=@mi_archivo_audio.wav"
+        ```
+    """
     def post(self, request, *args, **kwargs):
         # Obtner el archivo de audio desde la petición
         audio_file = request.FILES.get("audio")

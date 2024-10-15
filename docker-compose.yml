@@ -1,0 +1,9 @@
+version: '3.5'
+services: 
+  instabill:
+    build: .
+    command: python instabill/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/instabill
+    ports:
+      - "80:8000"
