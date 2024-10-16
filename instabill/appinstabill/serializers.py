@@ -1,21 +1,45 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Bill
+from .models import Factura, Cliente, Producto
 
 
-class BillSerializer(ModelSerializer):
+class ClienteSerializer(ModelSerializer):
     class Meta:
-        model = Bill
-        fields = ("id", "file", "uploaded_at")
+        model = Cliente
+        fields = ("nombre", "direccion", "contacto")
+
+
+class ProductoSerializer(ModelSerializer):
+    class Meta:
+        model = Producto
+        fields = ("nombre", "cantidad", "precio_unitario", "precio_total")
+
+
+class FacturaSerializer(ModelSerializer):
+    cliente = ClienteSerializer(many=False)
+    productos = ProductoSerializer(many=True)
+
+    class Meta:
+        model = Factura
+        fields = (
+            "id_factura",
+            "cliente",
+            "fecha_facturacion",
+            "productos",
+            "total_compra",
+        )
 
     def create(self, validated_data):
-        file = validated_data.pop("file", None)
+        cliente_data = validated_data.pop("cliente")
+        productos_data = validated_data.pop("productos")
 
-        # Save the instance first to get an ID
-        instance = Bill.objects.create(**validated_data)
+        # Create Cliente object
+        cliente, created = Cliente.objects.get_or_create(**cliente_data)
 
-        if file:
-            # Now attach the file to the instance and save it again
-            instance.file = file
-            instance.save()
+        # Create Factura object
+        factura = Factura.objects.create(cliente=cliente, **validated_data)
 
-        return instance
+        # Create Producto objects
+        for producto_data in productos_data:
+            Producto.objects.create(factura=factura, **producto_data)
+
+        return factura

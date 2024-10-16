@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SpeechToTextAPIView, BillViewSet
+from .views import SpeechToTextAPIView, FacturaViewSet
 
 router = DefaultRouter()
-router.register(r"bills", BillViewSet)
+router.register(r"bills", FacturaViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
