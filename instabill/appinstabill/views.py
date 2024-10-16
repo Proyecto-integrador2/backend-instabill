@@ -1,6 +1,6 @@
 import os
-from .models import Bill
-from .serializers import BillSerializer
+from .models import Factura
+from .serializers import FacturaSerializer
 from django.shortcuts import render
 from django.core.files.storage import default_storage
 from rest_framework.views import APIView
@@ -15,6 +15,7 @@ from io import BytesIO
 API_KEY = config("API_KEY")
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config("GOOGLE_APPLICATION_CREDENTIALS")
+
 
 class SpeechToTextAPIView(APIView):
     """
@@ -48,6 +49,7 @@ class SpeechToTextAPIView(APIView):
         -F "audio=@mi_archivo_audio.wav"
         ```
     """
+
     def post(self, request, *args, **kwargs):
         # Obtner el archivo de audio desde la petición
         audio_file = request.FILES.get("audio")
@@ -99,6 +101,6 @@ class SpeechToTextAPIView(APIView):
         return Response({"transcription": transcription})
 
 
-class BillViewSet(viewsets.ModelViewSet):
-    queryset = Bill.objects.all()
-    serializer_class = BillSerializer
+class FacturaViewSet(viewsets.ModelViewSet):
+    queryset = Factura.objects.all()
+    serializer_class = FacturaSerializer
